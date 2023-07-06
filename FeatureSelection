@@ -1,0 +1,18 @@
+import pandas as pd
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+class FeatureSelection:
+    def __init__(self, k_features):
+        self.k_features = k_features
+        self.selected_features = []
+
+    def fit(self, X, y):
+        selector = SelectKBest(score_func=f_regression, k=self.k_features)
+        selector.fit(X, y)
+        mask = selector.get_support()
+        self.selected_features = X.columns[mask]
+
+    def transform(self, X):
+        return X[self.selected_features]
