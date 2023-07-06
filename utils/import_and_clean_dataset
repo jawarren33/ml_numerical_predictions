@@ -1,0 +1,33 @@
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+
+def import_and_clean_dataset(file_path):
+    # Import the dataset from CSV
+    dataset = pd.read_csv(file_path)
+
+    # Drop any rows with missing values
+    dataset.dropna(inplace=True)
+
+    # Separate features (X) and target variable (y)
+    X = dataset.drop('target_variable', axis=1)
+    y = dataset['target_variable']
+
+    # Perform data cleaning steps
+    # Step 1: Encode categorical variables
+    categorical_cols = X.select_dtypes(include=['object']).columns
+    for col in categorical_cols:
+        X[col] = LabelEncoder().fit_transform(X[col])
+
+    # Step 2: Handle missing values
+    numeric_cols = X.select_dtypes(include=['float64', 'int64']).columns
+    for col in numeric_cols:
+        if X[col].isnull().sum() > 0:
+            X[col] = SimpleImputer(strategy='mean').fit_transform(X[col].values.reshape(-1, 1))
+
+    # Step 3: Scale numeric features
+    scaler = StandardScaler()
+    X[numeric_cols] = scaler.fit_transform(X[numeric_cols])
+
+    return X, y
