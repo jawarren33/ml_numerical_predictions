@@ -1,0 +1,41 @@
+import pandas as pd
+import numpy as np
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_squared_error
+
+class ARIMAModel:
+    def __init__(self, order=(1, 0, 0)):
+        self.order = order
+        self.model = None
+
+    def fit(self, X):
+        self.model = ARIMA(X, order=self.order)
+        self.model_fit = self.model.fit()
+
+    def predict(self, n_periods):
+        return self.model_fit.forecast(steps=n_periods)[0]
+
+def test_arima(X_train, X_test):
+    model = ARIMAModel()
+    model.fit(X_train)
+    y_pred = model.predict(len(X_test))
+    mse = mean_squared_error(X_test, y_pred)
+    return mse
+
+# Example usage
+# Load the data into a pandas DataFrame
+data = pd.read_csv('data.csv')
+
+# Split the data into training and testing sets
+train_data = data.iloc[:-12]  # Use all but the last 12 months for training
+test_data = data.iloc[-12:]   # Use the last 12 months for testing
+
+# Extract the key variable from the data
+key_variable_train = train_data['key_variable'].values
+key_variable_test = test_data['key_variable'].values
+
+# Train and test the ARIMA model
+arima = ARIMAModel()
+arima.fit(key_variable_train)
+mse = test_arima(key_variable_train, key_variable_test)
+print("Mean Squared Error:", mse)
